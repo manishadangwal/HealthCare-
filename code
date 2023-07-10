@@ -1,0 +1,280 @@
+# Importing data in this enviroment 
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+%matplotlib inline
+import seaborn as sns
+import  sklearn
+
+#importing data in this enviroment
+Diabetes_data= pd.read_csv("health care diabetes.csv")
+Diabetes_data
+
+Diabetes_data.head(5)
+Diabetes_data.dtypes
+Diabetes_data.describe()
+
+# Null Check
+Diabetes_data.isnull().sum()
+
+# Defined the minimum value of the columns be zero (0) in Glucose , BloodPressure , SkinThickness , Insulin and BMI.
+df=Diabetes_data[(Diabetes_data['Glucose']==0) | (Diabetes_data['BloodPressure']==0) |(Diabetes_data['SkinThickness']==0) | (Diabetes_data['Insulin']==0) | (Diabetes_data['BMI']==0)]
+df
+
+# Visually explore these variable, we use histograms for the distribution of these variables.
+Diabetes_data['Glucose'].hist()
+plt.title('Glucose histograms')
+plt.xlabel('Glucose')
+plt.ylabel('frequnces')
+
+Diabetes_data['BloodPressure'].hist(bins=10)
+plt.title('BloodPressure histogram')
+plt.xlabel('BloodPressure')
+plt.ylabel('Frequnace')
+
+Diabetes_data['SkinThickness'].hist(bins=10)
+plt.title('SkinThickness histograms')
+plt.xlabel('SkinThickness')
+plt.ylabel('Frequances')
+
+Diabetes_data['Insulin'].hist(bins=10)
+plt.title('Insulin histogarms')
+plt.xlabel('Insulin')
+plt.ylabel('Frequances')
+
+Diabetes_data['BMI'].hist(bins=10)
+plt.title('BMI histograms')
+plt.xlabel('BMI')
+plt.ylabel('Frequances')
+
+
+# Replacing the each columns values who has zero values by mean of these columns
+Diabetes_data['Glucose']=Diabetes_data['Glucose'].replace(0,Diabetes_data['Glucose'].mean())
+Diabetes_data['BloodPressure']=Diabetes_data['BloodPressure'].replace(0,Diabetes_data['BloodPressure'].mean())
+Diabetes_data['SkinThickness']=Diabetes_data['SkinThickness'].replace(0,Diabetes_data['SkinThickness'].mean())
+Diabetes_data['Insulin']=Diabetes_data['Insulin'].replace(0,Diabetes_data['Insulin'].mean())
+Diabetes_data['BMI']=Diabetes_data['BMI'].replace(0,Diabetes_data['BMI'].mean())
+df=Diabetes_data[(Diabetes_data['Glucose']==0) | (Diabetes_data['BloodPressure']==0) |(Diabetes_data['SkinThickness']==0) | (Diabetes_data['Insulin']==0) | (Diabetes_data['BMI']==0)]
+
+Diabetes_data.dtypes
+
+Diabetes_data.dtypes.value_counts().plot(kind='bar')
+
+
+# Check the balance of the data by plotting the count of outcomes by their value.
+plt.hist(Diabetes_data['Outcome'])
+plt.title('Blancing data check for Outcome')
+plt.xlabel('Outcome')
+plt.ylabel('Counts')
+
+
+sns.pairplot(Diabetes_data, hue= 'Outcome')
+
+
+#Performing correlation analysis. Visually explore it using a heat map.
+Diabetes_data.corr()
+
+plt.subplots(figsize=(20,10))
+sns.heatmap(Diabetes_data.corr(),annot=True,cmap='viridis')
+
+# Model building
+x = Diabetes_data.iloc[:, 0:-1]
+y = pd.DataFrame(Diabetes_data.iloc[:, -1])
+from sklearn.model_selection import train_test_split
+x_train,x_test,y_train,y_test = train_test_split(x,y,test_size=0.3)
+print(x_test.shape)
+print(y_test.shape)
+print(x_train.shape)
+print(y_train.shape)
+
+
+# Scaling the data
+from sklearn.preprocessing import StandardScaler
+scaler = StandardScaler()
+scaler.fit(x_train)
+x_train= scaler.transform(x_train)
+x_test= scaler.transform(x_test)
+print(x_train.shape)
+print(x_test.shape)
+
+# Logistic regression
+from sklearn.linear_model import LogisticRegression
+logistic_model = LogisticRegression()
+logistic_model.fit(x_train,y_train)
+pred_value = pd.DataFrame(logistic_model.predict(x_test))
+from sklearn import metrics
+print(metrics.accuracy_score(y_test,pred_value))
+print(metrics.classification_report(y_test,pred_value))
+print(metrics.confusion_matrix(y_test,pred_value))
+
+# DecisionTree
+from sklearn.tree import DecisionTreeClassifier
+decision_tree = DecisionTreeClassifier()
+decision_tree.fit(x_train,y_train)
+DecisionTreeClassifier()
+pred_value1 = pd.DataFrame(decision_tree.predict(x_test))
+print(metrics.accuracy_score(y_test,pred_value1))
+print(metrics.classification_report(y_test,pred_value1))
+print(metrics.confusion_matrix(y_test,pred_value1))
+
+# Random Forest method
+from sklearn.ensemble import RandomForestClassifier
+random_forest = RandomForestClassifier()
+random_forest.fit(x_train,y_train)
+pred_value2 = pd.DataFrame(random_forest.predict(x_test))
+print(metrics.accuracy_score(y_test,pred_value2))
+print(metrics.classification_report(y_test,pred_value2))
+print(metrics.confusion_matrix(y_test,pred_value2))
+
+
+# Support Vectore Machine
+from sklearn.svm import SVC
+svm = SVC(C=1.0, cache_size=200, class_weight=None, coef0=0.0, decision_function_shape='ovr', degree=3, gamma='auto', kernel='rbf',max_iter=-1, probability= True, random_state=None, shrinking=True,tol=0.001, verbose=False)
+svm.fit(x_train,y_train)
+pred_value3 = pd.DataFrame(svm.predict(x_test))
+print(metrics.accuracy_score(y_test,pred_value3))
+print(metrics.classification_report(y_test,pred_value3))
+print(metrics.confusion_matrix(y_test,pred_value3))
+
+# KNN
+from sklearn.neighbors import KNeighborsClassifier
+knn = KNeighborsClassifier(n_neighbors=5, metric='minkowski', p=2)
+knn.fit(x_train,y_train)
+pred_value4 = pd.DataFrame(knn.predict(x_test))
+print(metrics.accuracy_score(y_test,pred_value4))
+print(metrics.confusion_matrix(y_test,pred_value4))
+print(metrics.classification_report(y_test,pred_value4))
+
+
+# Calculating Sensitivity and Specificity
+# Calculating confusion matrix for each model
+conf_matrix1 = pd.DataFrame(metrics.confusion_matrix(y_test,pred_value4),columns = ['Predicted Negative', 'Predicted Positive'],index = ['Actual Negative', 'Actual Positive'])
+conf_matrix2 = pd.DataFrame(metrics.confusion_matrix(y_test,pred_value),columns = ['Predicted Negative', 'Predicted Positive'],index = ['Actual Negative', 'Actual Positive'])
+conf_matrix3 = pd.DataFrame(metrics.confusion_matrix(y_test,pred_value1),columns = ['Predicted Negative', 'Predicted Positive'],index = ['Actual Negative', 'Actual Positive'])
+conf_matrix4 = pd.DataFrame(metrics.confusion_matrix(y_test,pred_value2),columns = ['Predicted Negative', 'Predicted Positive'],index = ['Actual Negative', 'Actual Positive'])
+conf_matrix5 = pd.DataFrame(metrics.confusion_matrix(y_test,pred_value3),columns = ['Predicted Negative', 'Predicted Positive'],index = ['Actual Negative', 'Actual Positive'])
+
+# calulating TP,,TN,FP,FN for each model
+TP1 = conf_matrix1.iloc[1,1]
+TN1 = conf_matrix1.iloc[0,0]
+FP1 = conf_matrix1.iloc[0,1]
+FN1 = conf_matrix1.iloc[1,0] 
+TP2 = conf_matrix2.iloc[1,1]
+TN2 = conf_matrix2.iloc[0,0]
+FP2 = conf_matrix2.iloc[0,1]
+FN2 = conf_matrix2.iloc[1,0] 
+TP3 = conf_matrix3.iloc[1,1]
+TN3 = conf_matrix3.iloc[0,0]
+FP3 = conf_matrix3.iloc[0,1]
+FN3 = conf_matrix3.iloc[1,0] 
+TP4 = conf_matrix4.iloc[1,1]
+TN4 = conf_matrix4.iloc[0,0]
+FP4 = conf_matrix4.iloc[0,1]
+FN4 = conf_matrix4.iloc[1,0] 
+TP5 = conf_matrix5.iloc[1,1]
+TN5 = conf_matrix5.iloc[0,0]
+FP5 = conf_matrix5.iloc[0,1]
+FN5 = conf_matrix5.iloc[1,0] 
+
+# calculate the sensitivity
+conf_sensitivity1 = (TP1 / float(TP1 + FN1))
+conf_sensitivity2 = (TP2 / float(TP2 + FN2))
+conf_sensitivity3 = (TP3 / float(TP3 + FN3))
+conf_sensitivity4 = (TP4 / float(TP4 + FN4))
+conf_sensitivity5 = (TP5 / float(TP5 + FN5))
+print('Sensitivity of KNN :', conf_sensitivity1)
+print('Sensitivity of Logistic Regression :', conf_sensitivity2)
+print('Sensitivity of Decision Tree :', conf_sensitivity3)
+print('Sensitivity of Random Forest :',conf_sensitivity4)
+print('Sensitivity of SVM :',conf_sensitivity5)
+
+# calculate the specificity
+conf_specificity1 = (TN1 / float(TN1 + FP1))
+conf_specificity2 = (TN2 / float(TN2 + FP2))
+conf_specificity3 = (TN3 / float(TN3 + FP3))
+conf_specificity4 = (TN4 / float(TN4 + FP4))
+conf_specificity5 = (TN1 / float(TN5 + FP5))
+print('Specificity of KNN :', conf_specificity1)
+print('Specificity of Logistic Regression :', conf_specificity2)
+print('Specificity of Decision Tree :', conf_specificity3)
+print('Specificity of Random Forest :',conf_specificity4)
+print('Specificity of SVM :',conf_specificity5)
+      
+
+# predict probabilities
+pred_prob1 = knn.predict_proba(x_test)
+pred_prob2 = logistic_model.predict_proba(x_test)
+pred_prob3 = decision_tree.predict_proba(x_test)
+pred_prob4 = random_forest.predict_proba(x_test)
+pred_prob5 = svm.predict_proba(x_test)
+from sklearn.metrics import roc_curve
+from sklearn.metrics import roc_auc_score
+
+# roc curve for models
+fpr1, tpr1, thresh1 = roc_curve(y_test, pred_prob1[:,1], pos_label=1)
+fpr2, tpr2, thresh2 = roc_curve(y_test, pred_prob2[:,1], pos_label=1)
+fpr3, tpr3, thresh3 = roc_curve(y_test, pred_prob3[:,1], pos_label=1)
+fpr4, tpr4, thresh4 = roc_curve(y_test, pred_prob4[:,1], pos_label=1)
+fpr5, tpr5, thresh5 = roc_curve(y_test, pred_prob5[:,1], pos_label=1)
+
+# roc curve for tpr = fpr 
+random_probs = [0 for i in range(len(y_test))]
+p_fpr, p_tpr, _ = roc_curve(y_test, random_probs, pos_label=1)
+
+# auc scores
+auc_score1 = roc_auc_score(y_test, pred_prob1[:,1])
+auc_score2 = roc_auc_score(y_test, pred_prob2[:,1])
+auc_score3 = roc_auc_score(y_test, pred_prob3[:,1])
+auc_score4 = roc_auc_score(y_test, pred_prob4[:,1])
+auc_score5 = roc_auc_score(y_test, pred_prob5[:,1])
+print(auc_score1)
+print(auc_score2)
+print(auc_score3)
+print(auc_score4)
+print(auc_score5)
+
+
+
+import matplotlib.pyplot as plt
+plt.style.use('seaborn')
+
+# plot roc curves
+plt.plot(fpr1, tpr1, linestyle='--',color='orange', label='KNN')
+plt.plot(fpr2, tpr2, linestyle='--',color='green', label='Logistic Regression')
+plt.plot(fpr3, tpr3, linestyle='--',color='red', label='Decision Tree')
+plt.plot(fpr4, tpr4, linestyle='--',color='yellow', label='Random Forest')
+plt.plot(fpr5, tpr5, linestyle='--',color='black', label='SVM')
+plt.plot(p_fpr, p_tpr, linestyle='--', color='blue',)
+# title
+plt.title('ROC curve')
+# x label
+plt.xlabel('False Positive Rate')
+# y label
+plt.ylabel('True Positive rate')
+
+plt.legend(loc='best')
+plt.savefig('ROC',dpi=300)
+plt.show();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
